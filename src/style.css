@@ -1,75 +1,71 @@
-html, body {
-  margin: 0;
-  padding: 0;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply dark:bg-neutral-800 dark:text-neutral-100;
+  }
+
+  main {
+    @apply p-4 text-sm;
+  }
+
+  input[type=file] {
+    @apply px-2 py-1 border border-zinc-300 dark:border-neutral-500 cursor-pointer;
+  }
+
+  input[type=file]::-webkit-file-upload-button {
+    @apply hidden;
+  }
+
+  button[type=button] {
+    @apply px-3 py-1 bg-neutral-300 dark:bg-neutral-600 hover:bg-opacity-60;
+    line-height: 1.6;
+  }
+  
+  table {
+    @apply w-full border border-black dark:border-neutral-500;
+  }
+
+  table > thead > tr:not(:first-child) > th,
+  table > tbody > tr > td {
+    @apply border-t border-black dark:border-neutral-500;
+  }
+
+  table th:not(:last-child), table td:not(:last-child) {
+    @apply border-r border-black dark:border-neutral-500;
+  }
+
+  table th {
+    @apply font-normal px-2 py-1 text-left;
+  }
+
+  table td {
+    @apply p-2 align-top;
+  }
+  
+  table th:first-child,
+  table td:first-child {
+    @apply text-center;
+  }
+  
+  table td:nth-child(3) {
+    @apply tracking-wide;
+    max-width: 70vw;
+  }
+  
+  table td:nth-child(3) div {
+    @apply break-words;
+  }
+  
+  table td:nth-child(3) div:not(:last-child) {
+    @apply mb-4;
+  }
 }
 
-.hidden {
-  display: none;
-}
-
-.block {
-  display: block;
-}
-
-.mb-2 {
-  margin-bottom: 0.5rem;
-}
-
-.mb-4 {
-  margin-bottom: 1rem;
-}
-
-.mb-8 {
-  margin-bottom: 2rem;
-}
-
-.cursor-pointer {
-  cursor: pointer;
-}
-
-#app {
-  padding: 2rem;
-}
-
-.section-title {
-  margin-bottom: 0.25rem
-}
-
-.input-midi {
-  display: inline-block;
-  border: 1px solid #cbd5e1;
-  padding: 0.25rem;
-  margin-bottom: 0.25rem;
-}
-
-.btn-convert {
-  margin-bottom: 0.25rem;
-}
-
-#jsonContent {
-  max-height: 500px;
-  overflow-y: auto;
-}
-
-#tracks {
-  width: 100%;
-  display: table;
-  border-collapse: collapse;
-}
-
-#tracks th {
-  text-align: left;
-}
-
-#tracks th,
-#tracks td {
-  padding: 0.25rem;
-  border: 1px solid #cbd5e1;
-}
-
-#tracks .single-melodies {
-  max-width: 60vw;
-  padding: 0.25rem;
-  border: 1px solid #e2e8f0;
-  word-wrap: break-word;
+@layer utilities {
+  *:focus {
+    @apply outline-1 outline-blue-400;
+  }
 }
