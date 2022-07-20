@@ -1,38 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>midi2mml</title>
-    <script type="module" crossorigin src="./assets/index.0df63da6.js"></script>
-    <link rel="stylesheet" href="./assets/index.cf94b0b2.css">
-  </head>
-  <body>
-    <div id="app">
 
-      <div class="block mb-8">
-        <label class="block mb-2 cursor-pointer" for="inputMidi">
-          <div class="section-title">Midi File: </div>
-          <input type="file" name="midiFile" id="inputMidi" class="input-midi" accept=".mid"/>
-        </label>
-        <button type="button" class="cursor-pointer" id="btnConvert"> Convert </button>
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" href="/favicon.ico" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>midi2mmltoo</title>
+  <!-- Basically midi to mml 2 -->
+  <script type="module" crossorigin src="/assets/index.ffa59262.js"></script>
+  <link rel="stylesheet" href="/assets/index.f385988d.css">
+</head>
+
+<body>
+  <main>
+
+    <div class="flex gap-x-4 align-bottom mb-8">
+      <label class="cursor-pointer" for="inputMidi">
+        <span class="block mb-1">Midi File: </span>
+        <input type="file" name="midiFile" id="inputMidi" class="input-midi" accept=".mid" />
+      </label>
+      <div class="self-end">
+        <button type="button" class="" id="btnConvert"> Convert </button>
       </div>
-
-      <div class="block mb-8">
-        <div class="section-title">MML: </div>
-        <table id="tracks" class="">
-          <thead>
-            <tr>
-              <th>Ch. Index</th>
-              <th>Ch. Name</th>
-              <th>MML</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-
     </div>
-    
-  </body>
+
+    <div class="block mb-8">
+      <div class="mb-2">MML: </div>
+      <table id="tracks" class="">
+        <thead>
+          <tr>
+            <th class="w-8">#</th>
+            <th class="w-72">Ch. Name</th>
+            <th>MML</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+  </main>
+  
+</body>
+
 </html>
