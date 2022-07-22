@@ -1,13 +1,15 @@
-import { Track as MidiTrack } from "@tonejs/midi";
+import { Track as _MidiTrack } from "@tonejs/midi";
 import { Note as MidiNote } from "@tonejs/midi/dist/Note";
-import { arrayLookup } from "./common";
+import { AdvOpt, advOptActive, arrayLookup } from "./common";
 
-export function processChannel(track: MidiTrack) {
-  const melodies: MidiNote[][] = splitChords(flattenChordGroup(sortChords(groupChords(track.notes), 'desc')));
+type MidiTrack = Partial<_MidiTrack>;
+
+export function processChannel(track: MidiTrack, option: any) {
+  const melodies: MidiNote[][] = splitChords(flattenChordGroup(sortChords(groupChords(track.notes!), 'desc')));
   const mmlSequences: string[] = [];
-  for(const notes of melodies) {
-    if(notes.length == 0) break;
-    
+  for (const notes of melodies) {
+    if (notes.length == 0) break;
+
     let ticks: number = 0;
     let currentOctave: number = 0;
     let mmlSequence: string = '';
@@ -16,51 +18,119 @@ export function processChannel(track: MidiTrack) {
       const noteTriggerTime = note.ticks;
       const octave = note.octave - 1;
 
+      if (
+        advOptActive()
+        && option.divideMeasure > 0
+        && (option.divideMeasureOffset + ticks) % (512 * option.divideMeasure) == 0
+      ) {
+        mmlSequence += ' ';
+      }
+
       if (checkRest(ticks, note)) {
         mmlSequence += addRest(noteTriggerTime - ticks);
         ticks += (noteTriggerTime - ticks);
       }
 
       while (octave != currentOctave) {
-        if(octave > currentOctave) {
+        if (octave > currentOctave) {
           mmlSequence += '>';
           currentOctave++;
         }
-        else if(octave < currentOctave) {
+        else if (octave < currentOctave) {
           mmlSequence += '<';
           currentOctave--;
         }
       }
 
       mmlSequence += `${toneJSNoteToMmlNote(note.name)}${ticksToNoteLength(noteLength)}`;
-      
+
       ticks += note.durationTicks;
     });
 
     mmlSequences.push(mmlSequence.trim());
   }
-  
+
   return mmlSequences;
 }
 
-export function processChannel9(track: MidiTrack) {
-  const chords = Object.entries(groupChords(track.notes));
-
-  let ticks: number = 0;
+export function processRhythmChannel(track: MidiTrack, option: any) {
   let mmlSequence: string = '';
-  for(const [noteTriggerTime, notes] of chords) {
-    let rhythmDefinitionInt = 0;
-    if (checkRest(ticks, notes[0])) {
-      mmlSequence += addRest(parseInt(noteTriggerTime) - ticks);
-      ticks += (parseInt(noteTriggerTime) - ticks);
+  if (advOptActive() && option.divideMeasure > 0) {
+    const _track = addRestsToTrackNotes(track);
+    let _notes: MidiNote[] = [];
+
+    const firstNoteTicks: number = _track.notes?.[0].ticks!;
+    if (firstNoteTicks! > 0) {
+      let ticks: number = 0;
+      while (ticks > 0) {
+        const tickMod = ticks % 512 || 0;
+        if (tickMod === 0) {
+          const _note: Partial<MidiNote> = {
+            ticks: ticks,
+            durationTicks: 512,
+            midi: 0,
+            velocity: 0,
+            name: 'R',
+          };
+          ticks += 512;
+          //@ts-ignore
+          _notes.push(_note);
+        }
+        else {
+          const _note: Partial<MidiNote> = {
+            ticks: ticks,
+            durationTicks: firstNoteTicks - ticks,
+            midi: 0,
+            velocity: 0,
+            name: 'R',
+          };
+          ticks += firstNoteTicks - ticks;
+          //@ts-ignore
+          _notes.push(_note);
+          break;
+        }
+      }
     }
-    notes.forEach(note => {
-      rhythmDefinitionInt += parseRhythmDefinition(note)!;
-    });
-    mmlSequence += `@${rhythmDefinitionInt}c${ticksToNoteLength(notes[0].durationTicks)}`;
-    ticks += notes[0].durationTicks;
+    _notes = _notes.concat(track.notes!);
+
+    const chords = Object.entries(groupChords(_notes));
+    const chordSplit: [string, MidiNote[]][][] = [];
+    for (const [noteTriggerTime, notes] of chords) {
+      if (parseInt(noteTriggerTime) >= 512 * option.divideMeasure * chordSplit.length) {
+        chordSplit.push([]);
+      }
+      chordSplit[chordSplit.length - 1].push([noteTriggerTime, notes]);
+    }
+
+    for(const _chords of chordSplit) {
+      for (const [, notes] of _chords) {
+        if(notes[0].name! == 'R') {
+          mmlSequence += `r${ticksToNoteLength(notes[0].durationTicks)}`;
+        }
+        else {
+          let rhythmDefinitionInt = 0;
+          notes.forEach(note => rhythmDefinitionInt += parseRhythmDefinition(note)!);
+          mmlSequence += `@${rhythmDefinitionInt}c${ticksToNoteLength(notes[0].durationTicks)}`;
+        }
+      }
+      mmlSequence += ' ';
+    }
   }
-  
+  else {
+    const _track = addRestsToTrackNotes(track);
+    const chords = Object.entries(groupChords(_track.notes!));
+    for (const [, notes] of chords) {
+      if(notes[0].name! == 'R') {
+        mmlSequence += `r${ticksToNoteLength(notes[0].durationTicks)}`;
+      }
+      else {
+        let rhythmDefinitionInt = 0;
+        notes.forEach(note => rhythmDefinitionInt += parseRhythmDefinition(note)!);
+        mmlSequence += `@${rhythmDefinitionInt}c${ticksToNoteLength(notes[0].durationTicks)}`;
+      }
+    }
+  }
+
   return mmlSequence.trim();
 }
 
@@ -131,12 +201,12 @@ export function ticksToNoteLength(ticks: number) {
 
 function splitChords(notes: MidiNote[]) {
   const singleMelodySequences: MidiNote[][] = [];
-  
+
   let ticks = -1;
   let index = 0;
 
   notes.forEach(note => {
-    if(ticks != note.ticks) {
+    if (ticks != note.ticks) {
       ticks = note.ticks;
       index = 0;
     }
@@ -144,7 +214,7 @@ function splitChords(notes: MidiNote[]) {
       index += 1;
     }
 
-    if(singleMelodySequences[index] == null)
+    if (singleMelodySequences[index] == null)
       singleMelodySequences.push([]);
 
     singleMelodySequences[index].push(note);
@@ -158,6 +228,62 @@ export function toneJSNoteToMmlNote(note: string) {
   return note.toLowerCase().slice(0, note.length - 1).replace('#', '+');
 }
 
+export function addRestsToTrackNotes(track: MidiTrack) {
+  let currentTicks: number = 0;
+  let prevNote: MidiNote;
+  let _track: MidiTrack = {
+    ...track,
+    notes: []
+  }
+
+  const _checkRest = (currentNote: MidiNote) => {
+    if (currentTicks == 0) {
+      return checkRest(currentTicks, currentNote);
+    }
+    return prevNote != null
+      ? (currentNote.ticks - prevNote.ticks) > prevNote.duration
+      : false;
+  }
+
+  for (const note of track.notes!) {
+    const { ticks } = note;
+    if (_checkRest(note)) {
+      while (currentTicks < ticks) {
+        const tickMod = currentTicks % 512 || 0;
+        if (tickMod === 0) {
+          const _note: Partial<MidiNote> = {
+            ticks: currentTicks,
+            durationTicks: 512,
+            midi: 0,
+            velocity: 0,
+            name: 'R',
+          };
+          currentTicks += 512;
+          //@ts-ignore
+          _track.notes?.push(_note);
+        }
+        else {
+          const _note: Partial<MidiNote> = {
+            ticks: currentTicks,
+            durationTicks: note.ticks - currentTicks,
+            midi: 0,
+            velocity: 0,
+            name: 'R',
+          };
+          currentTicks += note.ticks - currentTicks;
+          //@ts-ignore
+          _track.notes?.push(_note);
+          break;
+        }
+      }
+    }
+    _track.notes?.push(note);
+    currentTicks = note.ticks + note.durationTicks;
+    prevNote = note;
+  }
+  return _track;
+}
+
 export function flattenChordGroup(chordGroup: { [key: string]: MidiNote[] }) {
   return Object.values(chordGroup).flat(4);
 }
@@ -165,7 +291,7 @@ export function flattenChordGroup(chordGroup: { [key: string]: MidiNote[] }) {
 /** Must group the chord first for the input */
 export function sortChords(chords: { [key: string]: MidiNote[] }, ordering: 'asc' | 'desc' = 'asc') {
   const newGroup: { [key: string]: MidiNote[] } = {};
-  for(const [ticks, notes] of Object.entries(chords)) {
+  for (const [ticks, notes] of Object.entries(chords)) {
     const sorted = notes.sort((ordering == 'desc' ? sortChordDesc : sortChordAsc));
     newGroup[ticks.toString()] = sorted;
   }
@@ -185,6 +311,18 @@ export function groupChords(notes: MidiNote[]) {
   });
 
   return result;
+}
+
+export function mapRhythmDefFromOpt(seq: string) {
+  if(seq == null || seq.length == 0)
+    return seq;
+
+  const defs: string[] = AdvOpt.current.rhythmPresets.replace(/\s/g, '').split(',');
+  defs.forEach(v => {
+    const [before, after] = v.split('=');
+    seq = seq.replaceAll(before, after);
+  });
+  return seq;
 }
 
 function sortChordAsc(a: MidiNote, b: MidiNote) {

@@ -12,13 +12,67 @@
 <body>
   <main>
 
-    <div class="flex gap-x-4 align-bottom mb-8">
+    <div class="flex gap-x-4 items-end mb-8">
       <label class="cursor-pointer" for="inputMidi">
         <span class="block mb-1">Midi File: </span>
         <input type="file" name="midiFile" id="inputMidi" class="input-midi" accept=".mid" />
       </label>
-      <div class="self-end">
-        <button type="button" class="" id="btnConvert"> Convert </button>
+      <button type="button" class="" id="btnConvert"> Convert </button>
+      <div class="mb-1">
+        <a href="#" id="advOptToggle" class="text-center text-zinc-400 hover:text-zinc-300">Advanced Option</a>
+      </div>
+    </div>
+
+    <div class="mb-8 hidden" id="advOptWrapper">
+      <div class="p-2 border border-black dark:border-neutral-500">
+        <div class="mb-4">
+          <span>Advanced Option</span>
+          <span class="ml-4">
+            <button class="small" id="saveOptBtn">Save</button>
+            <button class="small" id="loadOptBtn">Load</button>
+            <button class="small" id="resetOptBtn">Reset</button>
+          </span>
+        </div>
+        <div class="flex gap-x-2">
+          <div class="flex-grow hidden">
+            <div class="mb-4">
+              <div class="mb-2 flex items-center">
+                <span class="mr-2" title="Every n measures will be divided by a space. Default 0 means disabled.">Divide Measures:</span>
+              </div>
+              <input type="number" class="block w-full" id="divideMeasure" placeholder="0" />
+            </div>
+            <div class="mb-4">
+              <div class="mb-2 flex items-center">
+                <span class="mr-2" title="Length offset to start dividing measures. Works when Divide Measures is greater than 0.">Offset (Divide Measures):</span>
+              </div>
+              <input type="number" class="block w-full" id="divideMeasureOffset" placeholder="0 (Whole length = 512)" />
+            </div>
+            <div class="mb-4">
+              <div class="mb-2 flex items-center">
+                <span class="mr-2" title="Basically transposition value.">MIDI Offset:</span>
+              </div>
+              <input type="number" class="block w-full" id="midiOffset" placeholder="0" />
+            </div>
+          </div>
+
+          <div class="flex-grow">
+            <div class="mb-4">
+              <div class="mb-2 flex items-center">
+                <span class="mr-2" title="Comma separated presets to replace some rhythm definition.">Rhythm definition presets:</span>
+              </div>
+              <input type="text" class="block w-full" id="rhythmPresets" placeholder="3=2, 769=514, ..." />
+            </div>
+            <div class="mb-4">
+              <div class="mb-2 flex items-center">
+                <span class="mr-2" title="Treat certain channels as the rhythm channel. Default 9 (Channel 10).">Process channels as rhythm channel:</span>
+              </div>
+              <input type="text" class="block w-full" id="processAsRhythm" placeholder="Channel numbers (0, 1, 2, etc)" />
+            </div>
+          </div>
+
+          <div class="flex-grow">
+          </div>
+        </div>
       </div>
     </div>
 

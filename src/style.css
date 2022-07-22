@@ -11,6 +11,15 @@
     @apply p-4 text-sm;
   }
 
+  input {
+    @apply bg-transparent;
+  }
+
+  input[type=text],
+  input[type=number] {
+    @apply px-2 py-1 border border-zinc-300 dark:border-neutral-500;
+  }
+
   input[type=file] {
     @apply px-2 py-1 border border-zinc-300 dark:border-neutral-500 cursor-pointer;
   }
@@ -19,9 +28,18 @@
     @apply hidden;
   }
 
-  button[type=button] {
+  input[type=checkbox] {
+    @apply p-2 border border-zinc-300 dark:border-neutral-500;
+  }
+
+  button[type=button]:not(.small) {
     @apply px-3 py-1 bg-neutral-300 dark:bg-neutral-600 hover:bg-opacity-60;
     line-height: 1.6;
+  }
+
+  button.small {
+    @apply bg-neutral-300 dark:bg-neutral-600 hover:bg-opacity-60;
+    padding: 1px 6px;
   }
   
   table {
@@ -65,7 +83,13 @@
 }
 
 @layer utilities {
-  *:focus {
-    @apply outline-1 outline-blue-400;
+  input[type=text]:focus,
+  input[type=number]:focus,
+  input[type=file]:focus {
+    @apply outline-none outline-transparent border-zinc-500 dark:border-neutral-300;
+  }
+
+  button[type=button]:focus {
+    @apply outline-none outline-transparent bg-opacity-60;
   }
 }
