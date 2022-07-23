@@ -3,12 +3,12 @@
 
 <head>
   <meta charset="UTF-8" />
-  <link rel="icon" href="/favicon.ico" />
+  <link rel="icon" href="./assets/favicon.8480e00f.ico" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>midi2mmltoo</title>
-  <!-- Basically midi to mml 2 -->
-  <script type="module" crossorigin src="./assets/index.7ed0d905.js"></script>
-  <link rel="stylesheet" href="./assets/index.a9465af4.css">
+  <!-- Basically midi to mml 2 for 2.x -->
+  <script type="module" crossorigin src="./assets/index.a1b167cd.js"></script>
+  <link rel="stylesheet" href="./assets/index.44d7d7d4.css">
 </head>
 
 <body>
@@ -19,7 +19,7 @@
         <span class="block mb-1">Midi File: </span>
         <input type="file" name="midiFile" id="inputMidi" class="input-midi" accept=".mid" />
       </label>
-        <button type="button" class="" id="btnConvert"> Convert </button>
+      <button type="button" class="" id="btnConvert"> Convert </button>
       <div class="mb-1">
         <a href="#" id="advOptToggle" class="text-center text-zinc-400 hover:text-zinc-300">Advanced Option</a>
       </div>
@@ -34,21 +34,25 @@
             <button class="small" id="loadOptBtn">Load</button>
             <button class="small" id="resetOptBtn">Reset</button>
           </span>
+          <span class="ml-4 text-xs text-zinc-400">Hover labels for help</span>
         </div>
         <div class="flex gap-x-2">
-          <div class="flex-grow hidden">
+          <div class="flex-grow">
             <div class="mb-4">
               <div class="mb-2 flex items-center">
-                <span class="mr-2" title="Every n measures will be divided by a space. Default 0 means disabled.">Divide Measures:</span>
+                <span class="mr-2" title="The beginning of measure to be processed.">Start from Measure:</span>
               </div>
-              <input type="number" class="block w-full" id="divideMeasure" placeholder="0" />
+              <input type="number" class="block w-full" id="startAtMeasure" placeholder="0" />
             </div>
             <div class="mb-4">
               <div class="mb-2 flex items-center">
-                <span class="mr-2" title="Length offset to start dividing measures. Works when Divide Measures is greater than 0.">Offset (Divide Measures):</span>
+                <span class="mr-2" title="Excluded, the end of measure to be processed. Default 0 means stop at the last measure.">End at Measure:</span>
               </div>
-              <input type="number" class="block w-full" id="divideMeasureOffset" placeholder="0 (Whole length = 512)" />
+              <input type="number" class="block w-full" id="endAtMeasure" placeholder="0" />
             </div>
+          </div>
+
+          <div class="flex-grow">
             <div class="mb-4">
               <div class="mb-2 flex items-center">
                 <span class="mr-2" title="Basically transposition value.">MIDI Offset:</span>
@@ -71,9 +75,6 @@
               <input type="text" class="block w-full" id="processAsRhythm" placeholder="Channel numbers (0, 1, 2, etc)" />
             </div>
           </div>
-
-          <div class="flex-grow">
-          </div>
         </div>
       </div>
     </div>
@@ -84,6 +85,7 @@
         <thead>
           <tr>
             <th class="w-8">#</th>
+            <th class="w-8">Ch.</th>
             <th class="w-72">Ch. Name</th>
             <th>MML</th>
           </tr>
