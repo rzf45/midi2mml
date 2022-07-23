@@ -11,20 +11,19 @@ const saveOptBtn = document.querySelector<HTMLButtonElement>('#saveOptBtn')!;
 const loadOptBtn = document.querySelector<HTMLButtonElement>('#loadOptBtn')!;
 const resetOptBtn = document.querySelector<HTMLButtonElement>('#resetOptBtn')!;
 const wrapper = document.querySelector<HTMLDivElement>('#advOptWrapper')!;
-const divideMeasure = document.querySelector<HTMLInputElement>('#divideMeasure')!;
-const divideMeasureOffset = document.querySelector<HTMLInputElement>('#divideMeasureOffset')!;
+const startAtMeasure = document.querySelector<HTMLInputElement>('#startAtMeasure')!;
+const endAtMeasure = document.querySelector<HTMLInputElement>('#endAtMeasure')!;
 const midiOffset = document.querySelector<HTMLInputElement>('#midiOffset')!;
 const rhythmPresets = document.querySelector<HTMLInputElement>('#rhythmPresets')!;
 const processAsRhythm = document.querySelector<HTMLInputElement>('#processAsRhythm')!;
 const tbody = mmlTracks.querySelector('tbody')!;
 
 const _advancedOption = {
-  divideMeasure: 0,
-  divideMeasureOffset: 0,
+  startAtMeasure: 0,
+  endAtMeasure: 0,
   midiOffset: 0,
   rhythmPresets: '',
   processAsRhythm: '9',
-  process9AsRhythm: true,
 };
 
 let _debounceSaveLast: number | null = null;
@@ -70,8 +69,8 @@ window.onload = () => {
   }
   initOpt();
   applyOptInput();
-  divideMeasure.onchange = () => updateOpt();
-  divideMeasureOffset.onchange = () => updateOpt();
+  startAtMeasure.onchange = () => updateOpt();
+  endAtMeasure.onchange = () => updateOpt();
   midiOffset.onchange = () => updateOpt();
   rhythmPresets.onchange = () => updateOpt();
   processAsRhythm.onchange = () => updateOpt();
@@ -89,12 +88,7 @@ function onConvert() {
     Midi.fromUrl(midiFileUrl)
     .then(midi => {
       tbody.textContent = '';
-      if (AdvOpt.current.divideMeasure > 0) {
-        CreateMeasureSplitProcess(midi);
-      }
-      else {
-        CreateNoMeasureSplitProcess(midi);
-      }
+      CreateNoMeasureSplitProcess(midi);
     });
   }
   else {
@@ -102,67 +96,19 @@ function onConvert() {
   }
 }
 
-function CreateMeasureSplitProcess(midi: Midi) {
-  const rhythmChannels = AdvOpt.current.processAsRhythm.split(',');
-  for (const track of midi.tracks) {
-    const row = tbody.insertRow();
-    const [chIndex, chName, mmlContent] = [row.insertCell(), row.insertCell(), row.insertCell()];
-
-    chIndex.appendChild(document.createTextNode(track.channel.toString()));
-    chName.appendChild(document.createTextNode(track.name));
-
-    if (rhythmChannels.includes(track.channel)) {
-      const mml = processRhythmChannel(track, AdvOpt.current);
-      const mmlSplit = mml.split(' ');
-      mmlSplit.map((_mml, i) => {
-        const mmlTextEl = document.createElement('div');
-        mmlTextEl.textContent = AdvOpt.current.rhythmPresets ? mapRhythmDefFromOpt(_mml) : _mml;
-        mmlContent.appendChild(mmlTextEl);
-        if (i < mmlSplit.length - 1) {
-          const hr = document.createElement('hr');
-          hr.classList.add('border-zinc-600', 'mb-2');
-          mmlContent.appendChild(hr);
-        }
-      });
-    }
-    else {
-      const forceOpt = AdvOpt.current.processAsRhythm.split(',').map((s: string) => s.trim());
-      const mmls = forceOpt.includes(track.channel.toString())
-        ? [processRhythmChannel(track, AdvOpt.current)]
-        : processChannel(track, AdvOpt.current);
-      mmls.forEach((mml, j) => {
-        const mmlSplit = mml.split(' ');
-        mmlSplit.map((_mml, i) => {
-          const mmlTextEl = document.createElement('div');
-          mmlTextEl.textContent = AdvOpt.current.rhythmPresets ? mapRhythmDefFromOpt(_mml) : _mml;
-          mmlContent.appendChild(mmlTextEl);
-          if (i < mmlSplit.length - 1) {
-            const hr = document.createElement('hr');
-            hr.classList.add('border-zinc-600', 'mb-2');
-            mmlContent.appendChild(hr);
-          }
-        });
-        if (j < mmls.length - 1) {
-          const hr = document.createElement('hr');
-          hr.classList.add('border-zinc-100', 'mb-2');
-          mmlContent.appendChild(hr);
-        }
-      });
-    }
-  }
-}
-
 function CreateNoMeasureSplitProcess(midi: Midi) {
   const rhythmChannels = AdvOpt.current.processAsRhythm.split(',');
-  for (const track of midi.tracks) {
+  for (let i = 0; i < midi.tracks.length; i++) {
+    const track = midi.tracks[i];
     const row = tbody.insertRow();
-    const [chIndex, chName, mmlContent] = [row.insertCell(), row.insertCell(), row.insertCell()];
+    const [trackIndex, chIndex, chName, mmlContent] = [row.insertCell(), row.insertCell(), row.insertCell(), row.insertCell()];
 
+    trackIndex.appendChild(document.createTextNode(i.toString()));
     chIndex.appendChild(document.createTextNode(track.channel.toString()));
     chName.appendChild(document.createTextNode(track.name));
 
     if (rhythmChannels.includes(track.channel)) {
-      const mml = processRhythmChannel(track, AdvOpt.current);
+      const mml = processRhythmChannel(track);
       const mmlTextEl = document.createElement('div');
       mmlTextEl.textContent = AdvOpt.current.rhythmPresets ? mapRhythmDefFromOpt(mml) : mml;
       mmlContent.appendChild(mmlTextEl);
@@ -170,8 +116,8 @@ function CreateNoMeasureSplitProcess(midi: Midi) {
     else {
       const forceOpt = AdvOpt.current.processAsRhythm.split(',').map((s: string) => s.trim());
       const mmls = forceOpt.includes(track.channel.toString())
-        ? [processRhythmChannel(track, AdvOpt.current)]
-        : processChannel(track, AdvOpt.current);
+        ? [processRhythmChannel(track)]
+        : processChannel(track);
       mmls.forEach(mml => {
         const mmlTextEl = document.createElement('div');
         mmlTextEl.textContent = AdvOpt.current.rhythmPresets ? mapRhythmDefFromOpt(mml) : mml;
@@ -188,12 +134,11 @@ function initOpt() {
 
 function updateOpt() {
   AdvOpt.current = {
-    divideMeasure: parseInt(divideMeasure.value),
-    divideMeasureOffset: parseInt(divideMeasureOffset.value),
+    startAtMeasure: parseInt(startAtMeasure.value),
+    endAtMeasure: parseInt(endAtMeasure.value),
     midiOffset: parseInt(midiOffset.value),
     rhythmPresets: rhythmPresets.value,
-    processAsRhythm: processAsRhythm.value,
-    process9AsRhythm: true,
+    processAsRhythm: processAsRhythm.value
   }
 
   if(_debounceSaveLast != null) {
@@ -205,9 +150,9 @@ function updateOpt() {
 }
 
 function applyOptInput() {
-  divideMeasure.value = AdvOpt.current.divideMeasure.toString();
-  divideMeasureOffset.value = AdvOpt.current.divideMeasureOffset.toString();
-  midiOffset.value = AdvOpt.current.midiOffset.toString();
-  rhythmPresets.value = AdvOpt.current.rhythmPresets;
-  processAsRhythm.value = AdvOpt.current.processAsRhythm;
+  startAtMeasure.value = AdvOpt.current?.startAtMeasure?.toString() || _advancedOption.startAtMeasure;
+  endAtMeasure.value = AdvOpt.current?.endAtMeasure?.toString() || _advancedOption.endAtMeasure;
+  midiOffset.value = AdvOpt.current?.midiOffset?.toString() || _advancedOption.midiOffset;
+  rhythmPresets.value = AdvOpt.current?.rhythmPresets || _advancedOption.rhythmPresets;
+  processAsRhythm.value = AdvOpt.current?.processAsRhythm || _advancedOption.processAsRhythm;
 }

@@ -64,20 +64,22 @@
   }
   
   table th:first-child,
-  table td:first-child {
+  table td:first-child,
+  table th:nth-child(2),
+  table td:nth-child(2) {
     @apply text-center;
   }
   
-  table td:nth-child(3) {
+  table td:nth-child(4) {
     @apply tracking-wide;
     max-width: 70vw;
   }
   
-  table td:nth-child(3) div {
+  table td:nth-child(4) div {
     @apply break-words;
   }
   
-  table td:nth-child(3) div:not(:last-child) {
+  table td:nth-child(4) div:not(:last-child) {
     @apply mb-4;
   }
 }
