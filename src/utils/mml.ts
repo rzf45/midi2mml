@@ -61,12 +61,12 @@ export function processRhythmChannel(track: MidiTrack) {
   const _track = addRestsToTrackNotes(track);
   const chords = Object.entries(groupChords(_track.notes!));
   for (const [, notes] of chords) {
-    const startAt = (AdvOpt.current.startAtMeasure - 1) * 512;
-    const endAt = (AdvOpt.current.endAtMeasure - 1) * 512;
-    if (notes[0].ticks < startAt)
-      continue;
-    if (notes[0].ticks >= endAt)
-      break;
+    // const startAt = (AdvOpt.current.startAtMeasure - 1) * 512;
+    // const endAt = (AdvOpt.current.endAtMeasure - 1) * 512;
+    // if (notes[0].ticks < startAt)
+    //   continue;
+    // if (endAt != 0 && notes[0].ticks >= endAt)
+    //   break;
 
     if (notes[0].name! == 'R') {
       mmlSequence += addRest(notes[0].durationTicks);
