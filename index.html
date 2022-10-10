@@ -6,14 +6,13 @@
   <link rel="icon" href="./assets/favicon.8480e00f.ico" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>midi2mmltoo</title>
-  <!-- Basically midi to mml 2 for 2.x -->
-  <script type="module" crossorigin src="./assets/index.a1b167cd.js"></script>
-  <link rel="stylesheet" href="./assets/index.44d7d7d4.css">
+  <!-- Basically midi to mml 2 -->
+  <script type="module" crossorigin src="./assets/index.346b9241.js"></script>
+  <link rel="stylesheet" href="./assets/index.3fcf3693.css">
 </head>
 
 <body>
-  <main>
-
+  <main class="relative">
     <div class="flex gap-x-4 items-end mb-8">
       <label class="cursor-pointer" for="inputMidi">
         <span class="block mb-1">Midi File: </span>
@@ -37,7 +36,7 @@
           <span class="ml-4 text-xs text-zinc-400">Hover labels for help</span>
         </div>
         <div class="flex gap-x-2">
-          <div class="flex-grow">
+          <!-- <div class="flex-grow">
             <div class="mb-4">
               <div class="mb-2 flex items-center">
                 <span class="mr-2" title="The beginning of measure to be processed.">Start from Measure:</span>
@@ -50,7 +49,7 @@
               </div>
               <input type="number" class="block w-full" id="endAtMeasure" placeholder="0" />
             </div>
-          </div>
+          </div> -->
 
           <div class="flex-grow">
             <div class="mb-4">
@@ -94,6 +93,7 @@
       </table>
     </div>
 
+    <div id="modal-container" class="fixed inset-0" data-open="true"></div>
   </main>
   
 </body>
